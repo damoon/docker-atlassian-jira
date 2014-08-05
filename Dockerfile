@@ -17,7 +17,7 @@ RUN apt-get update -qq \
 ENV JAVA_HOME     /usr/lib/jvm/java-7-oracle
 ENV JIRA_HOME     /home/jira
 # setup secondary environment helper variables
-ENV JIRA_VERSION  6.3
+ENV JIRA_VERSION  6.3.1
 
 # create non-root user to run ``Atlassian Jira``
 RUN useradd --create-home --comment "Account for running JIRA" jira \
