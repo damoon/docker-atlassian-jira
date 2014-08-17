@@ -9,9 +9,9 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886 \
     && echo debconf shared/accepted-oracle-license-v1-1 seen true \
        | sudo debconf-set-selections
 
-# install ``Wget``, ``Apache Portable Runtime`` and ``Java 8 JRE`` which is supported by ``Atlassian Jira``
+# install ``Wget``, ``Apache Portable Runtime`` and ``Java 7 JRE`` which is supported by ``Atlassian Jira``
 RUN apt-get update -qq \
-    && apt-get install -qqy wget libtcnative-1 oracle-java8-installer
+    && apt-get install -qqy wget libtcnative-1 oracle-java7-installer
 
 # setup primary environment variables
 ENV JAVA_HOME     /usr/lib/jvm/java-7-oracle
