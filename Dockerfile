@@ -9,9 +9,9 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886 \
     && echo debconf shared/accepted-oracle-license-v1-1 seen true \
        | sudo debconf-set-selections
 
-# install ``cURL`` and ``Java 7 JRE`` which is supported by ``Atlassian Jira``
+# install ``Wget``, ``Apache Portable Runtime`` and ``Java 8 JRE`` which is supported by ``Atlassian Jira``
 RUN apt-get update -qq \
-    && apt-get install -qqy wget curl oracle-java7-installer
+    && apt-get install -qqy wget libtcnative-1 oracle-java8-installer
 
 # setup primary environment variables
 ENV JAVA_HOME     /usr/lib/jvm/java-7-oracle
@@ -20,28 +20,31 @@ ENV JIRA_HOME     /home/jira
 ENV JIRA_VERSION  6.3.3
 
 # create non-root user to run ``Atlassian Jira``
-RUN useradd --create-home --comment "Account for running JIRA" jira \
+RUN useradd --create-home --comment "Account for running Atlassian Jira" jira \
     && chmod -R a+rw ~jira
 
 # download ``Atlassian Jira`` standalone archive version
 RUN wget "http://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-${JIRA_VERSION}.tar.gz" \
     && tar -xzf "atlassian-jira-${JIRA_VERSION}.tar.gz" \
-    && rm       "atlassian-jira-${JIRA_VERSION}.tar.gz" \
-    && mkdir -p /usr/local/atlassian \
-    && mv       "atlassian-jira-${JIRA_VERSION}-standalone" /usr/local/atlassian/jira \
-    && chown -R jira:jira /usr/local/atlassian/jira \
-    && chmod -R 777 /usr/local/atlassian/jira/temp \
-    && chmod -R 777 /usr/local/atlassian/jira/logs \
-    && chmod -R 777 /usr/local/atlassian/jira/work
+    && rm -rf   "atlassian-jira-${JIRA_VERSION}.tar.gz" \
+    && mkdir -p        "/usr/local/atlassian" \
+    && mv       "atlassian-jira-${JIRA_VERSION}-standalone" "/usr/local/atlassian/jira" \
+    && chown -R jira:  "/usr/local/atlassian/jira/temp" \
+    && chown -R jira:  "/usr/local/atlassian/jira/logs" \
+    && chown -R jira:  "/usr/local/atlassian/jira/work" \
+    && chmod -R 777    "/usr/local/atlassian/jira/temp" \
+    && chmod -R 777    "/usr/local/atlassian/jira/logs" \
+    && chmod -R 777    "/usr/local/atlassian/jira/work"
 
-# set the principal user as new non-root jira account
+# set the current user as ``jira`` since starting the server would execute as current user
 USER jira
 
-# expose default HTTP and tomcat shutdown port
-EXPOSE 8080 8005
+# expose default HTTP connector port
+EXPOSE 8080
 
-# set volume mount points for ``Atlassian Jira`` installation and home directory
+# set volume mount points for installation and home directory
 VOLUME ["/home/jira", "/usr/local/atlassian/jira"]
 
-# run ``Atlassian Jira`` as a foreground process
-CMD /usr/local/atlassian/jira/bin/start-jira.sh -fg
+# run ``Atlassian Jira`` and as a foreground process by default
+ENTRYPOINT ["/usr/local/atlassian/jira/bin/start-jira.sh"]
+CMD ["-fg"]
