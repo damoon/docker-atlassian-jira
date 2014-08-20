@@ -17,7 +17,7 @@ RUN apt-get update -qq \
 ENV JAVA_HOME     /usr/lib/jvm/java-7-oracle
 ENV JIRA_HOME     /home/jira
 # setup secondary environment helper variables
-ENV JIRA_VERSION  6.3.3
+ENV JIRA_VERSION  6.3.4
 
 # create non-root user to run ``Atlassian Jira``
 RUN useradd --create-home --comment "Account for running Atlassian Jira" jira \
@@ -29,6 +29,7 @@ RUN wget "http://www.atlassian.com/software/jira/downloads/binary/atlassian-jira
     && rm -rf   "atlassian-jira-${JIRA_VERSION}.tar.gz" \
     && mkdir -p        "/usr/local/atlassian" \
     && mv       "atlassian-jira-${JIRA_VERSION}-standalone" "/usr/local/atlassian/jira" \
+    && echo -e "\njira.home=$JIRA_HOME" >> "/usr/local/atlassian/jira/atlassian-jira/WEB-INF/classes/jira-application.properties" \
     && chown -R jira:  "/usr/local/atlassian/jira/temp" \
     && chown -R jira:  "/usr/local/atlassian/jira/logs" \
     && chown -R jira:  "/usr/local/atlassian/jira/work" \
