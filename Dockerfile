@@ -3,11 +3,11 @@ FROM java:7
 # setup useful environment variables
 ENV JIRA_HOME     /var/local/atlassian/jira
 ENV JIRA_INSTALL  /usr/local/atlassian/jira
-ENV JIRA_VERSION  6.3.8
+ENV JIRA_VERSION  6.3
 
 # install ``Atlassian Confluence``
 RUN set -x \
-    && apt-get install -qqy libtcnative-1 \
+    && apt-get install -qqy libtcnative-1 xmlstarlet \
     && mkdir -p             "${JIRA_HOME}" \
     && chown nobody:nogroup "${JIRA_HOME}" \
     && mkdir -p             "${JIRA_INSTALL}" \

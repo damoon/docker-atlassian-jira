@@ -1,6 +1,6 @@
-# Atlassian JIRA in a Docker Container
+# Atlassian JIRA in a Docker container
 
-[![Build Status](https://travis-ci.org/cptactionhank/docker-atlassian-jira.svg?branch=master)](https://travis-ci.org/cptactionhank/docker-atlassian-jira)
+[![Build Status](https://travis-ci.org/cptactionhank/docker-atlassian-jira.svg)](https://travis-ci.org/cptactionhank/docker-atlassian-jira)
 
 Use the awesome magic of Docker to isolate and run Atlassian JIRA isolated and with ease.
 
