@@ -2,37 +2,50 @@
 
 [![Build Status](https://travis-ci.org/cptactionhank/docker-atlassian-jira.svg)](https://travis-ci.org/cptactionhank/docker-atlassian-jira)
 
-Use the awesome magic of Docker to isolate and run Atlassian JIRA isolated and with ease.
+A containerized installation of Atlassian JIRA setup with a goal of keeping the installation as default as possible, but with a few Docker related twists.
 
-## Getting started
+Want to help out, check out the contribution section.
+
+## I'm in the fast lane! Get me started
 
 To quickly get started with running a JIRA instance, first run the following command:
-
 ```bash
-docker run -ti --rm -p 8080:8080 cptactionhank/jira:latest
+docker run --detach --publish 8080:8080 cptactionhank/atlassian-jira:latest
 ```
 
-Then use your browser to nagivate to `http://<yourserver>:8080/` and finish the configuration. More information can be found [here](https://confluence.atlassian.com/display/JIRA/Running+the+Setup+Wizard)
+Then use your browser to nagivate to `http://[dockerhost]:8080` and finish the configuration.
 
-## Advanced configuration
+## The slower road to get started
+
+An assumption is made that the docker version is at least 1.3.0 for the additional methods `docker exec` and `docker create`.
+
+This is how to create the container for running an Atlassian JIRA instance and before you run the command as is take note of the `[your settings]` which should be left out or filled to suit your needs.
+
+```bash
+docker create [your settings] cptactionhank/atlassian-jira:latest
+```
 
 Below is some documentation for additional configuration of the JIRA application, keep in mind this is the only tested configuration to suit own needs.
 
 ### Additional JIRA settings
 
-Use the `CATALINA_OPTS` environment variable for changing advanced settings eg.
-is also used to enable _Apache Portable Runtime (APR) based Native library for
-Tomcat_ or extending plugin loading timeout.
+Use the `CATALINA_OPTS` environment variable for changing advanced settings eg. changing memory consumption or extending plugin loading timeout. All possible configuration settings can be found at the Atlassian JIRA [documentation](https://confluence.atlassian.com/display/JIRA/Recognized+System+Properties+for+JIRA).
 
-An example running the Atlassian JIRA container with extended memory usage settings of 128MB as minimum and a maximum of 1GB.
+Use with Docker add `--env 'CATALINA_OPTS=[settings]'` as part of your container configuration flags.
 
-```bash
-docker run ... --env "CATALINA_OPTS=-Xms128m -Xmx1024m" cptactionhank/atlassian-jira
+#### JVM memory configuration
+
+To change the default memory configuration to your machine with extended memory usage settings add the following string to your `CATALINA_OPTS` environment variable. This will setup the JVM to be running with 128MB as minimum and 1GB as maximum allocatable memory.
+
 ```
+-Xms128m -Xmx1024m
+```
+
+More information about [`-Xms`](http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html#wp999528) and [`-Xmx`](http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html#wp999527) visit [here](http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html).
 
 #### Plugin loading timeout
 
-To change the plugin loading timeout to 5 minutes the following value should be added to the `CATALINA_OPTS` variable.
+To change the plugin loading timeout to _5 minutes_ the following string should be added to the `CATALINA_OPTS` environment variable.
 
 ```
 -Datlassian.plugins.enable.wait=300
@@ -40,25 +53,51 @@ To change the plugin loading timeout to 5 minutes the following value should be 
 
 #### Apache Portable Runtime (APR) based Native library for Tomcat
 
-This should enable Tomcat superspeeds.
+This is enabled by default.
+
+### Running as a different user
+
+Here will be information on how to run as a different user
 
 ```
--Djava.library.path=/usr/lib/x86_64-linux-gnu:/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib
+--user "docker-user:docker-group"
 ```
+
+make sure the home directory `/var/local/atlassian/jira` is set up with full read, write, and execute permissions on the directory.
+
+If not mounting the home directory volume yourself you can change the folder permissions by
+
+```bash
+$ docker exec [container] chown docker-user:docker-group /var/local/atlassian/jira
+```
+
+Please note that the exec will be executed as the supplied user in the `docker create` command, ie. `docker-user:docker-group`. You can circumvent this by
+
+```bash
+$ docker run -ti --rm --user root:root --volumes-from [container] java:7 chown docker-user:docker-group /var/local/atlassian/jira
+```
+
+### Customizations
+
+Example mounting files to change log4j logging output:
+
+```
+--volume "[hostpath]/log4j.properties:/usr/local/atlassian/jira/atlassian-jira/WEB-INF/classes/log4j.properties"
+```
+
+This should also be modifiable to suit your needs.
 
 ### Reverse Proxy Support
 
-You need to change the `/usr/local/atlassian/jira/conf/server.xml` file inside the container to include a couple of Connector [attributes](http://tomcat.apache.org/tomcat-8.0-doc/config/http.html#Proxy_Support). Additional information can be found at the [JIRA documentation](https://confluence.atlassian.com/display/JIRA/Integrating+JIRA+with+Apache).
+You need to change the `/usr/local/atlassian/jira/conf/server.xml` file inside the container to include a couple of Connector [attributes](http://tomcat.apache.org/tomcat-8.0-doc/config/http.html#Proxy_Support).
 
 Gaining access to the `server.xml` file on a running container use the following docker command edited to suit your setup
 
 ```bash
-docker run -ti --rm \
-       --volumes-from <jira-container-name> \
-       ubuntu:latest
+$ docker run -ti --rm --volumes-from <container> ubuntu:latest vi /usr/local/atlassian/jira/conf/server.xml
 ```
 
-Within this container the file can be accessed and edited to match your configuration (remember to restart the Jira container after). I recommend installing the Nano text editor unless you have the required knowledge to use vi.
+Within this container the file can be accessed and edited to match your configuration (remember to restart the JIRA container after).
 
 #### HTTP
 
@@ -86,61 +125,12 @@ For a reverse proxy server listening on port 443 (HTTPS) for inbound connections
 ></connector>
 ```
 
-## Upgrading Jira to a new version
+## Contributions
 
-First read and remember the steps from this guide [Upgrading JIRA Manually](https://confluence.atlassian.com/display/JIRA/Upgrading+JIRA+Manually) and then we'll get started. _NB. this is what i did and might not work for you or your system, but you can use it as a guideline._
+[![Build Status](https://travis-ci.org/cptactionhank/docker-atlassian-jira.svg)](https://travis-ci.org/cptactionhank/docker-atlassian-jira)
 
-### 1. So you have set your JIRA instance to read-only and made a copy of the database
+This has been made with the best intentions and current knowledge so it shouldn't be expected to be flawless. However you can support this too with best practices and other additions. Travis-CI has been setup to build the Dockerfile and run acceptance tests on the application image to ensure it is tested and working.
 
-1) This is depending on your choice of DBMS etc., so you're on your own here. Also let's make an XML export of the database by first exporting by the administration user interface.
+Out of date documentation, version, lack of tests, etc. why not help out by either creating an issue and open a discussion or sending a pull request with modifications.
 
-2)  Then we will copy the backup file from the container to the host, but it's a bit messy because of this [open issue](https://github.com/docker/docker/issues/1992). The first thing we need to know is where the volumes path's are located on the host by:
-
-```bash
-$ JIRA_HOME=$(docker inspect --format '{{ index .Volumes "/home/jira" }}' <container-name>)
-```
-
-Use this path to gain access to the mounted container volume and created backup file, so we will copy the file like the following:
-
-```bash
-$ sudo cp $JIRA_HOME/exports/<backup-name>.zip <backup-path>
-```
-
-Congratulations we have now moved the backup file for safe keeping.
-
-### 2. Backup the JIRA home directory
-
-Tar+gzip compressing the JIRA home directory to a file `jira-home.tar.gz` is done by executing the following.
-
-```bash
-$ sudo tar -cpzvf jira-home.tar.gz -C $JIRA_HOME --exclude ./tmp .
-```
-
-### 3. Switch to new database
-
-We need to restore the backup to a new container and switch the configuration to use a new empty database. The way I'll do this is first running bash process of the jira image.
-
-```bash
-docker run -ti --volume $(pwd):/backup ubuntu bash
-```
-
-Then we extract the backup by:
-
-```bash
-sudo tar -xpzvf /backup/jira-home.tar.gz -C $JIRA_HOME
-```
-
-Finally update the file `$JIRA_HOME/dbconfig.xml` to match a new __empty__ database.
-
-### 4. Setup other customizations
-
-Update special configurations performed on the installation directory `/usr/local/atlassian/jira` to match your needs.
-
-### 5. Restart the container
-
-Restart the container to use the updated settings performed in step 4 and to use the restored JIRA home directory. Now the only thing you need to do is to finish the web wizard setup and restore your data backup.
-
-*Good Luck*
-
-## Help, Complaints, and Additions
-Create a issue on this repository and i'll have a look at it.
+Acceptance tests are performed by Travis-CI in Ruby using the RSpec framework.
