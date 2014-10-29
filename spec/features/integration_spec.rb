@@ -2,7 +2,7 @@ require 'uri'
 require 'timeout'
 require 'docker'
 
-describe "Atlassian Confluence acceptance" do
+describe "Atlassian JIRA acceptance" do
 
   let(:regex_severe)  { /SEVERE|FATAL/  }
   let(:regex_warn)    { /WARNING|WARN/  }
@@ -29,7 +29,7 @@ describe "Atlassian Confluence acceptance" do
 
   end
 
-  context "when Atlassian Confluence is running" do
+  context "when Atlassian JIRA is running" do
 
     it "has started" do
       expect {wait_stdout regex_startup}.not_to raise_error
@@ -49,7 +49,7 @@ describe "Atlassian Confluence acceptance" do
 
   end
 
-  context "when Atlassian Confluence is shut down" do
+  context "when Atlassian JIRA is shut down" do
 
     it "has shut down" do
       # send term signal and expect container to shut down
