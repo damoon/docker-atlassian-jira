@@ -7,7 +7,9 @@ ENV JIRA_VERSION  6.3.7
 
 # install ``Atlassian Confluence``
 RUN set -x \
-    && apt-get install -qqy libtcnative-1 xmlstarlet \
+    && apt-get update --quiet \
+    && apt-get install --quiet --yes --no-install-recommends libtcnative-1 xmlstarlet \
+    && apt-get clean \
     && mkdir -p             "${JIRA_HOME}" \
     && chown nobody:nogroup "${JIRA_HOME}" \
     && mkdir -p             "${JIRA_INSTALL}" \
