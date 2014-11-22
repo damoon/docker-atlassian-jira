@@ -53,9 +53,11 @@ describe "Atlassian Confluence acceptance" do
 
     it "has shut down" do
       # send term signal and expect container to shut down
-      $container.kill
-      # give the container up to 60 seconds to successfully shutdown
-      expect($container.wait 60).to including("StatusCode" => 0, "StatusCode" => -1)
+      $container.kill signal: "SIGTERM"
+      # give the container up to 5 minutes to successfully shutdown
+      # exit code: 128+n Fatal error signal "n", ie. 143 = fatal error signal 
+      # SIGTERM
+      expect($container.wait 300).to including("StatusCode" => 0, "StatusCode" => 143)
     end
 
     it "has no severe in the stdout" do
