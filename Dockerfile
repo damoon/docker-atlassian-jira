@@ -3,7 +3,7 @@ FROM java:8-jre
 # setup useful environment variables
 ENV JIRA_HOME     /var/local/atlassian/jira
 ENV JIRA_INSTALL  /usr/local/atlassian/jira
-ENV JIRA_VERSION  6.3.10
+ENV JIRA_VERSION  6.2.6
 
 # install ``Atlassian Confluence``
 RUN set -x \
