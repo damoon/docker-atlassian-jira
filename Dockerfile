@@ -1,4 +1,4 @@
-FROM java:8-jre
+FROM java:openjdk-8-jre
 
 # setup useful environment variables
 ENV JIRA_HOME     /var/local/atlassian/jira
